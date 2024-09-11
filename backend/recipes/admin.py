@@ -8,16 +8,12 @@ class RecipeAdmin(admin.ModelAdmin):
         'name',
         'text',
         'image',
-        'is_favorited',
-        'is_in_shopping_cart',
         'cooking_time',
         'author'
     ]
     list_editable = [
         'text',
         'image',
-        'is_favorited',
-        'is_in_shopping_cart',
         'cooking_time',
         'author'
     ]

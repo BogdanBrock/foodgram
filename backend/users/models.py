@@ -8,10 +8,6 @@ class MyUser(AbstractUser):
         upload_to='avatar_image',
         blank=True
     )
-    is_subscribed = models.BooleanField(
-        'Подписан',
-        default=True
-    )
 
 
 class Follow(models.Model):

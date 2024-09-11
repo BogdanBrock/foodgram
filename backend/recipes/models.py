@@ -62,12 +62,9 @@ class Recipe(models.Model):
     text = models.TextField('Текст')
     image = models.ImageField(
         'Изображение',
-        upload_to='recipes_image',
-        null=True,
-        blank=True
+        upload_to='recipes_image'
     )
-    is_favorited = models.BooleanField('В избранном', default=False)
-    is_in_shopping_cart = models.BooleanField('В корзине', default=False)
+    created_at = models.DateTimeField('Дата создания', auto_now_add=True)
     cooking_time = models.IntegerField(
         'Время приготовления',
         validators=[MinValueValidator(1)]
@@ -111,9 +108,18 @@ class TagRecipe(models.Model):
 
 class IngredientRecipe(models.Model):
     """Класс модели IngredientRecipe."""
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    amount = models.PositiveSmallIntegerField()
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='ingredient_recipe'
+    )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE
+    )
+    amount = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1)]
+    )
 
 
 class Favorite(models.Model):
