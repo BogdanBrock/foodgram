@@ -1,3 +1,5 @@
+"""Представления для работы с моделями приложения API."""
+
 import os
 
 from django.conf import settings
@@ -38,20 +40,25 @@ User = get_user_model()
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Класс для обработки данных RecipeViewSet."""
+
     serializer_class = RecipeSerializer
     permission_classes = [AuthorOrReadOnly]
     filter_backend = [DjangoFilterBackend]
     pagination_class = CustomPagination
 
     def perform_create(self, serializer):
+        """Функция для изменения автора."""
         serializer.save(author=self.request.user)
 
     def get_object(self):
+        """Функция для получения отдельного объекта."""
         obj = get_object_or_404(Recipe, pk=self.kwargs['pk'])
         self.check_object_permissions(self.request, obj)
         return obj
 
     def get_queryset(self):
+        """Функция для получения списка объектов"""
         queryset = Recipe.objects.all().order_by('-created_at')
         current_user = self.request.user
         if not current_user.is_authenticated:
@@ -85,6 +92,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def shopping_cart(self, request, pk=None):
+        """Функция для добавление в корзину рецепта
+        и удаления из корзины рецепта."""
         recipe = self.get_object()
         if request.method == 'POST':
             try:
@@ -122,6 +131,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def download_shopping_cart(self, request):
+        """Функция для того, чтобы скачать список ингредиентов."""
         current_user = request.user
         recipe_list = IngredientRecipe.objects.filter(
             recipe__user_cart__user=current_user
@@ -133,10 +143,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if instance['name'] in str_data:
                 continue
             for number in range(len(data)):
-                try:
-                    data[number]
-                except IndexError:
-                    continue
                 if instance['id'] == data[number]['id']:
                     continue
                 if instance['name'] == data[number]['name']:
@@ -170,6 +176,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def favorite(self, request, pk=None):
+        """Функция для добавления рецепта в избранное
+        и удаления рецепта из избранного."""
         recipe = self.get_object()
         if request.method == 'POST':
             try:
@@ -211,6 +219,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link'
     )
     def get_link(self, request, pk=None):
+        """Функция для получения ссылки."""
         instance = self.get_object()
         data = {
             'short-link': reverse(
@@ -223,12 +232,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Представление для обработки данных TagViewSet."""
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Представление для обработки данных IngredientViewSet."""
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = [DjangoFilterBackend]
@@ -237,6 +250,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class CustomUserViewSet(UserViewSet):
+    """Представление для обработки данных CustomUserViewSet."""
+
     serializer_class = CustomUserSerializer
     pagination_class = CustomPagination
 
@@ -246,6 +261,7 @@ class CustomUserViewSet(UserViewSet):
         serializer_class=UserWithRecipesSerializer
     )
     def subscriptions(self, request):
+        """Функция для отображения подписчиков."""
         queryset = User.objects.filter(followers__user=request.user)
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(page, many=True)
@@ -259,6 +275,7 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def subscribe_and_unsubscribe(self, request, id=None):
+        """Функция для подспки и отписки на пользователя."""
         instance = get_object_or_404(User, id=self.kwargs['id'])
         if request.method == 'POST':
             if instance == request.user:
@@ -304,6 +321,7 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def avatar(self, request, id=None):
+        """Функция для изменения и удаления аватара."""
         user = User.objects.get(username=request.user)
         if request.method == 'PUT':
             serializer = AvatarSerializer(user, data=request.data)
@@ -327,5 +345,6 @@ class CustomUserViewSet(UserViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def me(self, request, *args, **kwargs):
+        """Функция для отображения страницы текущего пользователя."""
         self.get_object = self.get_instance
         return self.retrieve(request, *args, **kwargs)

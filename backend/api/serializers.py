@@ -1,7 +1,8 @@
+"""Сериализация данных для API."""
+
 import base64
 
 from django.http import Http404
-from django.conf import settings
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.contrib.auth import get_user_model, authenticate
@@ -20,8 +21,10 @@ User = get_user_model()
 
 
 class Base64ImageField(serializers.ImageField):
+    """Сериализатор Base64ImageField."""
 
     def to_internal_value(self, data):
+        """Функция для форматирования данных изображения."""
         if isinstance(data, str) and data.startswith('data:image'):
             format, imgstr = data.split(';base64,')
             ext = format.split('/')[-1]
@@ -31,43 +34,41 @@ class Base64ImageField(serializers.ImageField):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Tag."""
+    """Сериализатор TagSerializer."""
 
     class Meta:
-        """Класс определяет метаданные для сериализатора TagSerializer."""
+        """Класс определяет метаданные
+        для сериализатора TagSerializer."""
 
         model = Tag
         fields = ('id', 'name', 'slug')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Ingredient."""
+    """Сериализатор IngredientSerializer."""
 
     class Meta:
-        """
-        Класс определяет метаданные для
-        сериализатора IngredientSerializer.
-        """
+        """Класс определяет метаданные для
+        сериализатора IngredientSerializer."""
 
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
 
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Ingredient."""
+    """Сериализатор IngredientInRecipeSerializer."""
 
     id = serializers.IntegerField()
 
     class Meta:
-        """
-        Класс определяет метаданные для
-        сериализатора IngredienInRecipeSerializer.
-        """
+        """Класс определяет метаданные для
+        сериализатора IngredienInRecipeSerializer."""
 
         model = IngredientRecipe
         fields = ('id', 'amount')
 
     def to_representation(self, instance):
+        """Функция для отображения дополнительных данных."""
         representation = super().to_representation(instance)
         ingredient = instance.ingredient
         representation.update(
@@ -80,20 +81,19 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
 
 
 class AvatarSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели User."""
+    """Сериализатор AvatarSerializer."""
 
     avatar = Base64ImageField(allow_null=True)
 
     class Meta:
-        """
-        Класс определяет метаданные для
-        сериализатора SetAvatarSerializer.
-        """
+        """Класс определяет метаданные для
+        сериализатора AvatarSerializer."""
 
         model = User
         fields = ('avatar',)
 
     def validate_avatar(self, value):
+        """Функция для валидации аватара."""
         try:
             value
         except KeyError:
@@ -104,16 +104,14 @@ class AvatarSerializer(serializers.ModelSerializer):
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели User."""
+    """Сериализатор CustomUserSerializer."""
 
     avatar = Base64ImageField(required=False, allow_null=True)
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
-        """
-        Класс определяет метаданные для
-        сериализатора CustomUserSerializer.
-        """
+        """Класс определяет метаданные для
+        сериализатора CustomUserSerializer."""
 
         model = User
         fields = ('id', 'username', 'first_name',
@@ -121,6 +119,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
                   )
 
     def get_is_subscribed(self, obj):
+        """Функция для получения данных о подписке на пользователя."""
         user = self.context['request'].user
         if not user.is_authenticated:
             return False
@@ -132,16 +131,20 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class RecipeMinifiedSerializer(serializers.ModelSerializer):
+    """Сериализатор RecipeMinifiedSerializer."""
 
     image = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
+        """Класс определяет метаданные для
+        сериализатора RecipeMinifiedSerializer."""
+
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class UserWithRecipesSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели User."""
+    """Сериализатор UserWithRecipesSerializer."""
 
     avatar = Base64ImageField(required=False, allow_null=True)
     recipes = serializers.SerializerMethodField()
@@ -149,10 +152,8 @@ class UserWithRecipesSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
-        """
-        Класс определяет метаданные
-        для сериализатора UserWithRecipesSerializer.
-        """
+        """Класс определяет метаданные
+        для сериализатора UserWithRecipesSerializer."""
 
         model = User
         fields = ('id', 'username', 'first_name',
@@ -161,18 +162,23 @@ class UserWithRecipesSerializer(serializers.ModelSerializer):
                   )
 
     def get_recipes(self, obj):
+        """Функция для получения рецептов для пользователя."""
         request = self.context['request']
         recipes_limit = request.query_params.get('recipes_limit')
-        recipes = obj.recipes.all()
+        recipes = Recipe.objects.all().order_by(
+            '-created_at'
+        ).filter(author=obj)
         if recipes_limit:
             recipes = recipes[:int(recipes_limit)]
         serializer = RecipeMinifiedSerializer(recipes, many=True)
         return serializer.data
 
     def get_recipes_count(self, obj):
+        """Функция для получения количества рецептов."""
         return obj.recipes.count()
 
     def get_is_subscribed(self, obj):
+        """Функция для получения данных о подписке на пользователя."""
         user = self.context['request'].user
         try:
             get_object_or_404(Follow, user=user, following=obj)
@@ -182,7 +188,7 @@ class UserWithRecipesSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Recipe."""
+    """Сериализатор RecipeSerializer."""
 
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -198,7 +204,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
-        """Класс определяет метаданные для сериализатора RecipeSerializer."""
+        """Класс определяет метаданные
+        для сериализатора RecipeSerializer."""
 
         model = Recipe
         fields = (
@@ -207,6 +214,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, obj):
+        """Функция для получения данных о рецептах в избранном."""
         user = self.context['request'].user
         if not user.is_authenticated:
             return False
@@ -217,6 +225,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return True
 
     def get_is_in_shopping_cart(self, obj):
+        """Функция для получения данных о рецептах в корзине."""
         user = self.context['request'].user
         if not user.is_authenticated:
             return False
@@ -227,6 +236,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return True
 
     def to_representation(self, instance):
+        """Функция для преобразования данных поля tags"""
         representation = super().to_representation(instance)
         tags = Tag.objects.filter(id__in=instance.tags.all())
         serializer = TagSerializer(tags, many=True)
@@ -234,6 +244,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return representation
 
     def create(self, validated_data):
+        """Функция для создания данных."""
         ingredients = validated_data.pop('ingredient_recipe')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
@@ -252,6 +263,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
+        """Функция для изменения данных."""
         instance.name = validated_data.get('name')
         instance.text = validated_data.get('text')
         instance.image = validated_data.get('image')
@@ -288,6 +300,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return instance
 
     def validate(self, data):
+        """Функция для валидации данных."""
         try:
             data['ingredient_recipe']
             data['tags']
@@ -322,13 +335,16 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class CustomTokenCreateSerializer(TokenCreateSerializer):
+    """Сериализатор CustomTokenCreateSerializer."""
 
     def __init__(self, *args, **kwargs):
+        """Конструктор класса."""
         super().__init__(*args, **kwargs)
         self.user = None
         self.fields['email'] = serializers.CharField(required=False)
 
     def validate(self, attrs):
+        """Функция для валидации данных."""
         password = attrs.get("password")
         params = {'email': attrs.get('email')}
         self.user = authenticate(
@@ -344,8 +360,12 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
+    """Сериализатор CustomUserCreateSerializer."""
 
     class Meta:
+        """Класс определяет метаданные
+        для сериализатора CustomUserCreateSerializer."""
+
         model = User
         fields = (
             'id',
@@ -357,6 +377,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         )
 
     def validate(self, data):
+        """Функция для валидации данных."""
         try:
             data['email']
             data['first_name']

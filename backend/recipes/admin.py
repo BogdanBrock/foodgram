@@ -1,9 +1,16 @@
+"""Админ-зона для API."""
+
 from django.contrib import admin
 
-from .models import Recipe, Tag, Ingredient, TagRecipe, IngredientRecipe, Favorite, ShoppingCart
+from .models import (
+    Recipe, Tag, Ingredient, TagRecipe,
+    IngredientRecipe, Favorite, ShoppingCart
+)
 
 
 class RecipeAdmin(admin.ModelAdmin):
+    """Класс для управление админ-зоной."""
+
     list_display = [
         'name',
         'text',

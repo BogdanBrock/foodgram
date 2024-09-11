@@ -1,3 +1,5 @@
+"""Модели для создания БД."""
+
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
@@ -13,10 +15,8 @@ class Ingredient(models.Model):
     measurement_unit = models.CharField('Единица измерения', max_length=64)
 
     class Meta:
-        """
-        Класс определяет метаданные для
-        модели Ingredient.
-        """
+        """Класс определяет метаданные для
+        модели Ingredient."""
 
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
@@ -42,10 +42,8 @@ class Tag(models.Model):
     )
 
     class Meta:
-        """
-        Класс определяет метаданные для
-        модели Tag.
-        """
+        """Класс определяет метаданные для
+        модели Tag."""
 
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
@@ -87,10 +85,8 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        """
-        Класс определяет метаданные для
-        модели Recipe.
-        """
+        """Класс определяет метаданные для
+        модели Recipe."""
 
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
@@ -102,12 +98,14 @@ class Recipe(models.Model):
 
 class TagRecipe(models.Model):
     """Класс модели TagRecipe."""
+
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
 
 class IngredientRecipe(models.Model):
     """Класс модели IngredientRecipe."""
+
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -124,6 +122,7 @@ class IngredientRecipe(models.Model):
 
 class Favorite(models.Model):
     """Класс модели Favorite."""
+
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -140,6 +139,7 @@ class Favorite(models.Model):
 
 class ShoppingCart(models.Model):
     """Класс модели ShoppingCart."""
+
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
