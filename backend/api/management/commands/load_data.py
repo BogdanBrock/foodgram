@@ -19,7 +19,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Функция для создания ингредиентов в БД."""
         json_file = options['ingredients.json']
-        file_path = os.path.join(settings.BASE_DIR, '..', 'data', json_file)
+        file_path = os.path.join(
+            settings.BASE_DIR, 'api', 'management', json_file
+        )
 
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
