@@ -4,25 +4,19 @@ import os
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.http import FileResponse, Http404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from rest_framework import viewsets, status, permissions, serializers
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.reverse import reverse
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from recipes.models import (
-    Recipe,
-    Tag,
-    Ingredient,
-    Favorite,
-    ShoppingCart,
-    IngredientRecipe
-)
-from users.models import Follow
-from api.serializers import (
+from .filters import CustomFilter
+from .pagination import CustomPagination
+from .permissions import AuthorOrReadOnly
+from .serializers import (
     RecipeSerializer,
     TagSerializer,
     IngredientSerializer,
@@ -32,15 +26,18 @@ from api.serializers import (
     UserWithRecipesSerializer,
     IngredientInRecipeSerializer
 )
-from .permissions import AuthorOrReadOnly
-from .pagination import CustomPagination
+from recipes.models import (
+    Favorite, Ingredient, IngredientRecipe,
+    Recipe, ShoppingCart, Tag
+)
+from users.models import Follow
 
 
 User = get_user_model()
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """Класс для обработки данных RecipeViewSet."""
+    """Класс для обработки данных."""
 
     serializer_class = RecipeSerializer
     permission_classes = [AuthorOrReadOnly]
@@ -58,7 +55,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return obj
 
     def get_queryset(self):
-        """Функция для получения списка объектов"""
+        """Функция для получения списка объектов."""
         queryset = Recipe.objects.all().order_by('-created_at')
         current_user = self.request.user
         if not current_user.is_authenticated:
@@ -92,8 +89,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def shopping_cart(self, request, pk=None):
-        """Функция для добавление в корзину рецепта
-        и удаления из корзины рецепта."""
+        """
+        Функция для добавление в корзину рецепта
+        и удаления из корзины рецепта.
+        """
         recipe = self.get_object()
         if request.method == 'POST':
             try:
@@ -176,8 +175,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated]
     )
     def favorite(self, request, pk=None):
-        """Функция для добавления рецепта в избранное
-        и удаления рецепта из избранного."""
+        """
+        Функция для добавления рецепта в избранное
+        и удаления рецепта из избранного.
+        """
         recipe = self.get_object()
         if request.method == 'POST':
             try:
@@ -232,7 +233,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    """Представление для обработки данных TagViewSet."""
+    """Представление для обработки данных."""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -240,17 +241,17 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    """Представление для обработки данных IngredientViewSet."""
+    """Представление для обработки данных."""
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['name']
+    filterset_class = CustomFilter
     pagination_class = None
 
 
 class CustomUserViewSet(UserViewSet):
-    """Представление для обработки данных CustomUserViewSet."""
+    """Представление для обработки данных."""
 
     serializer_class = CustomUserSerializer
     pagination_class = CustomPagination

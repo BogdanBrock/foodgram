@@ -1,8 +1,8 @@
 """Модели для создания БД."""
 
 from django.db import models
-from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
 
 
 User = get_user_model()
@@ -11,15 +11,20 @@ User = get_user_model()
 class Ingredient(models.Model):
     """Класс модели Ingredient."""
 
-    name = models.CharField('Название', max_length=128)
+    name = models.CharField('Название', max_length=128, unique=True)
     measurement_unit = models.CharField('Единица измерения', max_length=64)
 
     class Meta:
-        """Класс определяет метаданные для
-        модели Ingredient."""
+        """Класс определяет метаданные для модели."""
 
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='name_measurement_unit_unique'
+            )
+        ]
 
     def __str__(self):
         """Функция для переопределния имени объекта модели."""
@@ -42,11 +47,16 @@ class Tag(models.Model):
     )
 
     class Meta:
-        """Класс определяет метаданные для
-        модели Tag."""
+        """Класс определяет метаданные для модели."""
 
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'slug'],
+                name='unique_name_slug'
+            )
+        ]
 
     def __str__(self):
         """Функция для переопределния имени объекта модели."""
@@ -85,8 +95,7 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        """Класс определяет метаданные для
-        модели Recipe."""
+        """Класс определяет метаданные для модели."""
 
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
@@ -101,6 +110,16 @@ class TagRecipe(models.Model):
 
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+    class Meta:
+        """Класс определяет метаданные для модели TagRecipe."""
+
+        verbose_name = 'тег для рецепта'
+        verbose_name_plural = 'Теги добавленные к рецепту'
+
+    def __str__(self):
+        """Функция для переопределния имени объекта модели."""
+        return f'{self.tag} был добавлен к {self.recipe}'
 
 
 class IngredientRecipe(models.Model):
@@ -119,6 +138,16 @@ class IngredientRecipe(models.Model):
         validators=[MinValueValidator(1)]
     )
 
+    class Meta:
+        """Класс определяет метаданные для модели."""
+
+        verbose_name = 'ингредиент в рецепт'
+        verbose_name_plural = 'Ингредиенты добавленные в рецепт'
+
+    def __str__(self):
+        """Функция для переопределния имени объекта модели."""
+        return f'{self.ingredient} был(а, о) добавлен в {self.recipe}'
+
 
 class Favorite(models.Model):
     """Класс модели Favorite."""
@@ -136,6 +165,16 @@ class Favorite(models.Model):
         verbose_name='Пользователь'
     )
 
+    class Meta:
+        """Класс определяет метаданные для модели."""
+
+        verbose_name = 'в избранное'
+        verbose_name_plural = 'Избранное'
+
+    def __str__(self):
+        """Функция для переопределния имени объекта модели."""
+        return f'{self.user} добавил(а) {self.recipe} в избранное'
+
 
 class ShoppingCart(models.Model):
     """Класс модели ShoppingCart."""
@@ -152,3 +191,13 @@ class ShoppingCart(models.Model):
         related_name='recipes_in_cart',
         verbose_name='Пользователь'
     )
+
+    class Meta:
+        """Класс определяет метаданные для модели."""
+
+        verbose_name = 'в корзину'
+        verbose_name_plural = 'Корзина'
+
+    def __str__(self):
+        """Функция для переопределния имени объекта модели."""
+        return f'{self.user} добавил(а) {self.recipe} в корзину'

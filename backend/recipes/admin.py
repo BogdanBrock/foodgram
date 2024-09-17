@@ -3,8 +3,8 @@
 from django.contrib import admin
 
 from .models import (
-    Recipe, Tag, Ingredient, TagRecipe,
-    IngredientRecipe, Favorite, ShoppingCart
+    Favorite, Ingredient, IngredientRecipe,
+    Recipe, ShoppingCart, Tag, TagRecipe
 )
 
 
@@ -13,28 +13,32 @@ class RecipeAdmin(admin.ModelAdmin):
 
     list_display = [
         'name',
-        'text',
-        'image',
-        'cooking_time',
+        'author',
+        'favorites_count_display'
+    ]
+    search_fields = [
+        'name',
         'author'
     ]
-    list_editable = [
-        'text',
-        'image',
-        'cooking_time',
-        'author'
-    ]
+    list_filter = ['tags']
+
+    def favorites_count_display(self, obj):
+        """Функция для отображения количества рецептов в избранном."""
+        return obj.user_favorite.count()
+
+    favorites_count_display.short_description = 'Добавлений в избранное'
+
+
+class IngredientAdmin(admin.ModelAdmin):
+    """Класс для управление админ-зоной."""
+
+    list_display = ['name', 'measurement_unit']
     search_fields = ['name']
-    list_filter = ['author']
-    filter_horizontal = [
-        'tags',
-        'ingredients'
-    ]
 
 
 admin.site.register(Recipe, RecipeAdmin)
+admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Tag)
-admin.site.register(Ingredient)
 admin.site.register(TagRecipe)
 admin.site.register(IngredientRecipe)
 admin.site.register(Favorite)

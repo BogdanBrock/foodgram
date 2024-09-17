@@ -2,17 +2,16 @@
 
 import base64
 
-from django.http import Http404
+from django.contrib.auth import authenticate, get_user_model
 from django.core.files.base import ContentFile
-from django.shortcuts import get_object_or_404, get_list_or_404
-from django.contrib.auth import get_user_model, authenticate
+from django.http import Http404
+from django.shortcuts import get_list_or_404, get_object_or_404
 from djoser.serializers import TokenCreateSerializer, UserCreateSerializer
 from rest_framework import serializers
 
-
 from recipes.models import (
-    Recipe, Tag, Ingredient, TagRecipe,
-    IngredientRecipe, Favorite, ShoppingCart
+    Favorite, Ingredient, IngredientRecipe,
+    Recipe, ShoppingCart, Tag, TagRecipe
 )
 from users.models import Follow
 
@@ -37,8 +36,7 @@ class TagSerializer(serializers.ModelSerializer):
     """Сериализатор TagSerializer."""
 
     class Meta:
-        """Класс определяет метаданные
-        для сериализатора TagSerializer."""
+        """Класс определяет метаданныедля сериализатора."""
 
         model = Tag
         fields = ('id', 'name', 'slug')
@@ -48,8 +46,7 @@ class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор IngredientSerializer."""
 
     class Meta:
-        """Класс определяет метаданные для
-        сериализатора IngredientSerializer."""
+        """Класс определяет метаданные для сериализатора."""
 
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
@@ -61,8 +58,7 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
 
     class Meta:
-        """Класс определяет метаданные для
-        сериализатора IngredienInRecipeSerializer."""
+        """Класс определяет метаданные для сериализатора."""
 
         model = IngredientRecipe
         fields = ('id', 'amount')
@@ -86,8 +82,7 @@ class AvatarSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField(allow_null=True)
 
     class Meta:
-        """Класс определяет метаданные для
-        сериализатора AvatarSerializer."""
+        """Класс определяет метаданные для сериализатора."""
 
         model = User
         fields = ('avatar',)
@@ -110,8 +105,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
-        """Класс определяет метаданные для
-        сериализатора CustomUserSerializer."""
+        """Класс определяет метаданные для сериализатора."""
 
         model = User
         fields = ('id', 'username', 'first_name',
@@ -136,8 +130,7 @@ class RecipeMinifiedSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
-        """Класс определяет метаданные для
-        сериализатора RecipeMinifiedSerializer."""
+        """Класс определяет метаданные для сериализатора."""
 
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
@@ -152,8 +145,7 @@ class UserWithRecipesSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
-        """Класс определяет метаданные
-        для сериализатора UserWithRecipesSerializer."""
+        """Класс определяет метаданные для сериализатора."""
 
         model = User
         fields = ('id', 'username', 'first_name',
@@ -204,8 +196,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
-        """Класс определяет метаданные
-        для сериализатора RecipeSerializer."""
+        """Класс определяет метаданные для сериализатора."""
 
         model = Recipe
         fields = (
@@ -236,7 +227,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return True
 
     def to_representation(self, instance):
-        """Функция для преобразования данных поля tags"""
+        """Функция для преобразования данных поля tags."""
         representation = super().to_representation(instance)
         tags = Tag.objects.filter(id__in=instance.tags.all())
         serializer = TagSerializer(tags, many=True)
@@ -363,8 +354,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
     """Сериализатор CustomUserCreateSerializer."""
 
     class Meta:
-        """Класс определяет метаданные
-        для сериализатора CustomUserCreateSerializer."""
+        """Класс определяет метаданные для сериализатора."""
 
         model = User
         fields = (

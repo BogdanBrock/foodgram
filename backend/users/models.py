@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractUser
 class MyUser(AbstractUser):
     """Класс модели MyUser."""
 
+    email = models.EmailField(unique=True)
     avatar = models.ImageField(
         'Аватар',
         upload_to='avatar_image',
@@ -31,8 +32,7 @@ class Follow(models.Model):
     )
 
     class Meta:
-        """Класс определяет метаданные для
-        модели Follow."""
+        """Класс определяет метаданные для модели Follow."""
 
         verbose_name = 'подписку'
         verbose_name_plural = 'Подписки'
