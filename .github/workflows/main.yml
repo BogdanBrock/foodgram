@@ -117,7 +117,7 @@ jobs:
         target: "foodgram"
 
     - name: Copy nginx.conf via ssh
-      uses: appleboy/scp-action@master
+      uses: appleboy/scp-action@maste
       with:
         host: ${{ secrets.VM_HOST }}
         username: ${{ secrets.VM_USER }}
