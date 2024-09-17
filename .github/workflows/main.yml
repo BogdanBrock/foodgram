@@ -113,7 +113,7 @@ jobs:
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "docker-compose.production.yml"
+        source: "infra/docker-compose.production.yml"
         target: "foodgram"
 
     - name: Copy nginx.conf via ssh
@@ -123,7 +123,7 @@ jobs:
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "nginx.conf"
+        source: "infra/nginx.conf"
         target: "foodgram"
 
     - name: Copy .env via ssh
@@ -133,7 +133,7 @@ jobs:
         username: ${{ secrets.VM_USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: ".env"
+        source: "infra/.env"
         target: "foodgram"
     
     - name: Executing remote ssh commands to deploy
