@@ -58,9 +58,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Функция для получения списка объектов."""
         queryset = Recipe.objects.all().order_by('-created_at')
         current_user = self.request.user
-        if not current_user.is_authenticated:
-            return queryset
         tags = self.request.GET.getlist('tags')
+        if not current_user.is_authenticated:
+            if tags:
+                queryset = queryset.prefetch_related('tags').filter(
+                    tags__slug__in=tags
+                ).distinct()
+            return queryset
         query_params = self.request.query_params
         is_in_shopping_cart = query_params.get(
             'is_in_shopping_cart'
