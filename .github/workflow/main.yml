@@ -125,6 +125,7 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         source: "infra/nginx.conf"
         target: "foodgram"
+
     
     - name: Executing remote ssh commands to deploy
       uses: appleboy/ssh-action@master
