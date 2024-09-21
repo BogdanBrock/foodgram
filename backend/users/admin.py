@@ -1,8 +1,12 @@
 """Админ-зона для API."""
 
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 
-from .models import MyUser, Follow
+from .models import Follow
+
+
+User = get_user_model()
 
 
 class FollowAdmin(admin.ModelAdmin):
@@ -11,5 +15,5 @@ class FollowAdmin(admin.ModelAdmin):
     search_fields = ['email', 'username']
 
 
-admin.site.register(MyUser)
+admin.site.register(User)
 admin.site.register(Follow, FollowAdmin)
