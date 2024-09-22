@@ -2,7 +2,7 @@
 
 from rest_framework.pagination import PageNumberPagination
 
-from . import constants
+from foodgram import constants
 
 
 class CustomPagination(PageNumberPagination):

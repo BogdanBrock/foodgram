@@ -6,11 +6,10 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-from api.constants import (
-    MAX_LENGTH_10, MAX_LENGTH_32,
-    MAX_LENGTH_64, MAX_LENGTH_128,
-    MAX_LENGTH_256, MIN_VALUE_VALIDATOR,
-    MAX_VALUE_VALIDATOR, CHARACTERS
+from foodgram.constants import (
+    MIN_VALUE_VALIDATOR,
+    MAX_VALUE_VALIDATOR,
+    CHARACTERS
 )
 
 
@@ -22,11 +21,11 @@ class Ingredient(models.Model):
 
     name = models.CharField(
         'Название',
-        max_length=MAX_LENGTH_128
+        max_length=128
     )
     measurement_unit = models.CharField(
         'Единица измерения',
-        max_length=MAX_LENGTH_64
+        max_length=64
     )
 
     class Meta:
@@ -51,11 +50,11 @@ class Tag(models.Model):
 
     name = models.CharField(
         'Название',
-        max_length=MAX_LENGTH_32
+        max_length=32
     )
     slug = models.SlugField(
         'Слаг',
-        max_length=MAX_LENGTH_32,
+        max_length=32,
         unique=True,
         null=True,
         blank=True
@@ -75,7 +74,7 @@ class Tag(models.Model):
 class Recipe(models.Model):
     """Класс модели Recipe."""
 
-    name = models.CharField('Название', max_length=MAX_LENGTH_256)
+    name = models.CharField('Название', max_length=256)
     text = models.TextField('Текст')
     image = models.ImageField(
         'Изображение',
@@ -97,7 +96,7 @@ class Recipe(models.Model):
         ]
     )
     created_at = models.DateTimeField('Дата создания', auto_now_add=True)
-    short_url = models.CharField(max_length=MAX_LENGTH_10, unique=True)
+    short_url = models.CharField(max_length=10, unique=True)
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -135,6 +134,7 @@ class Recipe(models.Model):
 
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+        ordering = ('-created_at',)
 
     def __str__(self):
         """Функция для переопределния имени объекта модели."""

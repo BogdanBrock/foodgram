@@ -4,8 +4,10 @@ import os
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import FileResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
@@ -16,11 +18,10 @@ from .pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
     AvatarSerializer,
-    CreateUserSerializer,
+    UserSerializer,
     FavoriteSerializer,
     FollowSerializer,
     IngredientSerializer,
-    IngredientInRecipeGetSerializer,
     RecipeSerializer,
     RecipeGetSerializer,
     ShoppingCartSerializer,
@@ -48,6 +49,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = CustomPagination
+    file_path = None
 
     def get_serializer_class(self):
         """Функция для изменения сериализатора."""
@@ -59,27 +61,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_cart(self, request):
         """Функция для того, чтобы скачать список ингредиентов."""
         user = request.user
-        recipe_list = IngredientRecipe.objects.filter(
+        ingredients = IngredientRecipe.objects.filter(
             recipe__user_cart__user=user
+        ).values(
+            'ingredient_id'
+        ).annotate(
+            amount=Sum('amount')
+        ).values_list(
+            'ingredient__name',
+            'ingredient__measurement_unit',
+            'amount'
         )
-        serializer = IngredientInRecipeGetSerializer(recipe_list, many=True)
-        data = serializer.data
         str_data = ''
-        for i, instance in enumerate(data):
-            if instance['name'] in str_data:
-                continue
-            for number in range(len(data)):
-                if i == number:
-                    continue
-                if instance['name'] == data[number]['name']:
-                    amount = data[number]['amount']
-                    new_amount = amount + instance['amount']
-                    instance['amount'] = new_amount
-            ingredient = (f'{instance["name"]} '
-                          f'({instance["measurement_unit"]}) - '
-                          f'{instance["amount"]}\n')
+        for name, measurement_unit, amount in ingredients:
+            ingredient = (f'{name} {measurement_unit} - {amount}\n')
             str_data += ingredient
+        self.save_download_shopping_cart(str_data)
+        return FileResponse(open(self.file_path, 'rb'))
 
+    @staticmethod
+    def save_download_shopping_cart(str_data):
+        """Функция для хранения покупок в файле."""
         folder_path = os.path.join(settings.BASE_DIR, 'download_shopping_cart')
         os.makedirs(folder_path, exist_ok=True)
         existing_files = os.listdir(folder_path)
@@ -89,12 +91,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             number = max(
                 [f.split('_')[2].split('.')[0] for f in existing_files]
             )
-        file_path = os.path.join(
+        RecipeViewSet.file_path = os.path.join(
             folder_path, f'shopping_cart_{str(int(number) + 1)}.txt'
         )
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(RecipeViewSet.file_path, 'w', encoding='utf-8') as f:
             f.write(str_data)
-        return FileResponse(open(file_path, 'rb'))
 
     @action(
         detail=True,
@@ -170,17 +171,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='get-link',
     )
     def get_link(self, request, pk=None):
-        """Функция для получения ссылки."""
-        instance = Recipe.objects.filter(short_url=pk)
-        if instance:
-            short_url = request.build_absolute_uri(
-                f'/recipes/{instance[0].id}/'
-            )
-            return HttpResponseRedirect(short_url)
+        """Функция для получения короткой ссылки."""
         instance = self.get_object()
         short_url = request.build_absolute_uri(f'/api/{instance.short_url}')
         data = {'short-link': short_url}
         return Response(data)
+
+    @staticmethod
+    def redirect_to_recipe(request, short_url):
+        """Функция для перехода к рецепту по короткой ссылке."""
+        instance = get_object_or_404(Recipe, short_url=short_url)
+        url = request.build_absolute_uri().split('/api')[0]
+        short_url = url + f'/recipes/{instance.id}/'
+        return HttpResponseRedirect(short_url)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -204,7 +207,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class CustomUserViewSet(UserViewSet):
     """Представление для обработки данных."""
 
-    serializer_class = CreateUserSerializer
+    serializer_class = UserSerializer
     pagination_class = CustomPagination
 
     @action(

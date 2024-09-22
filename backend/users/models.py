@@ -3,14 +3,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-from api.constants import MAX_LENGTH_150
-
 
 class CreateUser(AbstractUser):
     """Класс модели User."""
 
-    first_name = models.CharField('Имя', max_length=MAX_LENGTH_150)
-    last_name = models.CharField('Фамилия', max_length=MAX_LENGTH_150)
+    first_name = models.CharField('Имя', max_length=150)
+    last_name = models.CharField('Фамилия', max_length=150)
     email = models.EmailField('Почта', unique=True)
     avatar = models.ImageField(
         'Аватар',
@@ -26,7 +24,7 @@ class CreateUser(AbstractUser):
 
         verbose_name = 'пользователя'
         verbose_name_plural = 'Пользователи'
-        ordering = ['username']
+        ordering = ('username',)
 
     def __str__(self):
         """Функция для переопределния имени объекта модели."""

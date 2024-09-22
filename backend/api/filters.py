@@ -18,7 +18,7 @@ class IngredientFilter(django_filters.FilterSet):
         """Класс определяет метаданные для фильтрации IngredientFilter."""
 
         model = Ingredient
-        fields = ['name']
+        fields = ('name',)
 
 
 class RecipeFilter(django_filters.FilterSet):
@@ -41,7 +41,6 @@ class RecipeFilter(django_filters.FilterSet):
 
     def filter_is_favorited(self, queryset, name, value):
         """Функция для определения пользовательского поля."""
-        print('ЧТО ЗДЕСЬ ДОЛЖНО БЫТЬ', value)
         user = self.request.user
         if value and user.is_authenticated:
             return queryset.filter(user_favorite__user=self.request.user)
@@ -58,4 +57,4 @@ class RecipeFilter(django_filters.FilterSet):
         """Класс определяет метаданные для фильтрации RecipeFilter."""
 
         model = Recipe
-        fields = ['tags', 'author']
+        fields = ('tags', 'author')

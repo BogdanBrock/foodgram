@@ -19,7 +19,10 @@ router_v1.register('users', CustomUserViewSet, basename='users')
 
 urlpatterns = [
     path('', include(router_v1.urls)),
-    path('<str:pk>/', RecipeViewSet.as_view({'get': 'get_link'})),
+    path('<str:short_url>/', RecipeViewSet.as_view(
+        {'get': 'redirect_to_recipe'},
+        name='redirect_to_recipe'
+    )),
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
 ]
