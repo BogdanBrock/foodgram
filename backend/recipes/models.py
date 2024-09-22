@@ -7,9 +7,15 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from foodgram.constants import (
+    CHARACTERS,
+    INGREDIENT_NAME_MAX_LENGTH,
+    INGREDIENT_MEASUREMENT_UNIT_MAX_LENGTH,
     MIN_VALUE_VALIDATOR,
     MAX_VALUE_VALIDATOR,
-    CHARACTERS
+    RECIPE_NAME_MAX_LENGTH,
+    RECIPE_SHORT_URL_MAX_LENGTH,
+    TAG_MAX_LENGTH,
+
 )
 
 
@@ -21,11 +27,11 @@ class Ingredient(models.Model):
 
     name = models.CharField(
         'Название',
-        max_length=128
+        max_length=INGREDIENT_NAME_MAX_LENGTH
     )
     measurement_unit = models.CharField(
         'Единица измерения',
-        max_length=64
+        max_length=INGREDIENT_MEASUREMENT_UNIT_MAX_LENGTH
     )
 
     class Meta:
@@ -50,11 +56,11 @@ class Tag(models.Model):
 
     name = models.CharField(
         'Название',
-        max_length=32
+        max_length=TAG_MAX_LENGTH
     )
     slug = models.SlugField(
         'Слаг',
-        max_length=32,
+        max_length=TAG_MAX_LENGTH,
         unique=True,
         null=True,
         blank=True
@@ -74,7 +80,10 @@ class Tag(models.Model):
 class Recipe(models.Model):
     """Класс модели Recipe."""
 
-    name = models.CharField('Название', max_length=256)
+    name = models.CharField(
+        'Название',
+        max_length=RECIPE_NAME_MAX_LENGTH
+    )
     text = models.TextField('Текст')
     image = models.ImageField(
         'Изображение',
@@ -96,7 +105,11 @@ class Recipe(models.Model):
         ]
     )
     created_at = models.DateTimeField('Дата создания', auto_now_add=True)
-    short_url = models.CharField(max_length=10, unique=True)
+    short_url = models.CharField(
+        unique=True,
+        max_length=RECIPE_SHORT_URL_MAX_LENGTH
+    )
+
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -176,7 +189,7 @@ class IngredientRecipe(models.Model):
 
     def __str__(self):
         """Функция для переопределния имени объекта модели."""
-        return f'{self.ingredient} был(а, о) добавлен в {self.recipe}'
+        return f'{self.ingredient} был(а, о) добавлен(а, о) в {self.recipe}'
 
 
 class Favorite(models.Model):

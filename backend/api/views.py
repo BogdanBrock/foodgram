@@ -74,7 +74,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         str_data = ''
         for name, measurement_unit, amount in ingredients:
-            ingredient = (f'{name} {measurement_unit} - {amount}\n')
+            ingredient = (f'{name} ({measurement_unit}) - {amount}\n')
             str_data += ingredient
         self.save_download_shopping_cart(str_data)
         return FileResponse(open(self.file_path, 'rb'))

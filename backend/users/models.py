@@ -3,12 +3,20 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from foodgram.constants import CREATE_USER_MAX_LENGTH
+
 
 class CreateUser(AbstractUser):
     """Класс модели User."""
 
-    first_name = models.CharField('Имя', max_length=150)
-    last_name = models.CharField('Фамилия', max_length=150)
+    first_name = models.CharField(
+        'Имя',
+        max_length=CREATE_USER_MAX_LENGTH
+    )
+    last_name = models.CharField(
+        'Фамилия',
+        max_length=CREATE_USER_MAX_LENGTH
+    )
     email = models.EmailField('Почта', unique=True)
     avatar = models.ImageField(
         'Аватар',

@@ -36,6 +36,7 @@ services:
       - "8000:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./redoc.html:/usr/share/nginx/html/api/docs/
       - static:/usr/share/nginx/html/
       - media:/usr/share/nginx/media/
     depends_on:
